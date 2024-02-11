@@ -70,13 +70,13 @@ function Q(e) {
   if (this._index + e <= this._array.length)
     return Promise.resolve(this._array.subarray(this._index, this._index += e));
   var r = new Uint8Array(e);
-  return r.set(this._array.subarray(this._index)), function o() {
-    return t._source.read().then(function(i) {
-      return i.done ? (t._array = L, t._index = 0, n > 0 ? r.subarray(0, n) : null) : n + i.value.length >= e ? (t._array = i.value, t._index = e - n, r.set(i.value.subarray(0, e - n), n), r) : (r.set(i.value, n), n += i.value.length, o());
+  return r.set(this._array.subarray(this._index)), function i() {
+    return t._source.read().then(function(a) {
+      return a.done ? (t._array = L, t._index = 0, n > 0 ? r.subarray(0, n) : null) : n + a.value.length >= e ? (t._array = a.value, t._index = e - n, r.set(a.value.subarray(0, e - n), n), r) : (r.set(a.value, n), n += a.value.length, i());
     });
   }();
 }
-function C(e) {
+function B(e) {
   return typeof e.slice == "function" ? e : new m(typeof e.read == "function" ? e : e.getReader());
 }
 function m(e) {
@@ -112,8 +112,8 @@ var ee = {
 function te() {
   var e = this, t = 1;
   return e._source.slice(e._recordLength).then(function(n) {
-    return n && n[0] !== 26 ? { done: !1, value: e._fields.reduce(function(r, o) {
-      return r[o.name] = ee[o.type](e._decode(n.subarray(t, t += o.length))), r;
+    return n && n[0] !== 26 ? { done: !1, value: e._fields.reduce(function(r, i) {
+      return r[i.name] = ee[i.type](e._decode(n.subarray(t, t += i.length))), r;
     }, {}) } : { done: !0, value: void 0 };
   });
 }
@@ -121,22 +121,22 @@ function _(e) {
   return new DataView(e.buffer, e.byteOffset, e.byteLength);
 }
 function ne(e, t) {
-  return e = C(e), e.slice(32).then(function(n) {
+  return e = B(e), e.slice(32).then(function(n) {
     var r = _(n);
-    return e.slice(r.getUint16(8, !0) - 32).then(function(o) {
-      return new I(e, t, r, _(o));
+    return e.slice(r.getUint16(8, !0) - 32).then(function(i) {
+      return new I(e, t, r, _(i));
     });
   });
 }
 function I(e, t, n, r) {
   this._source = e, this._decode = t.decode.bind(t), this._recordLength = n.getUint16(10, !0), this._fields = [];
-  for (var o = 0; r.getUint8(o) !== 13; o += 32) {
-    for (var i = 0; i < 11 && r.getUint8(o + i) !== 0; ++i)
+  for (var i = 0; r.getUint8(i) !== 13; i += 32) {
+    for (var a = 0; a < 11 && r.getUint8(i + a) !== 0; ++a)
       ;
     this._fields.push({
-      name: this._decode(new Uint8Array(r.buffer, r.byteOffset + o, i)),
-      type: String.fromCharCode(r.getUint8(o + 11)),
-      length: r.getUint8(o + 16)
+      name: this._decode(new Uint8Array(r.buffer, r.byteOffset + i, a)),
+      type: String.fromCharCode(r.getUint8(i + 11)),
+      length: r.getUint8(i + 16)
     });
   }
 }
@@ -147,76 +147,76 @@ function re() {
   return this._source.cancel();
 }
 function b(e) {
-  var t = 40, n, r = e.getInt32(36, !0), o = new Array(r);
+  var t = 40, n, r = e.getInt32(36, !0), i = new Array(r);
   for (n = 0; n < r; ++n, t += 16)
-    o[n] = [e.getFloat64(t, !0), e.getFloat64(t + 8, !0)];
-  return { type: "MultiPoint", coordinates: o };
+    i[n] = [e.getFloat64(t, !0), e.getFloat64(t + 8, !0)];
+  return { type: "MultiPoint", coordinates: i };
 }
-function oe() {
+function ie() {
   return null;
 }
 function A(e) {
   return { type: "Point", coordinates: [e.getFloat64(4, !0), e.getFloat64(12, !0)] };
 }
 function P(e) {
-  var t = 44, n, r = e.getInt32(36, !0), o = e.getInt32(40, !0), i = new Array(r), s = new Array(o), c = [], d = [];
+  var t = 44, n, r = e.getInt32(36, !0), i = e.getInt32(40, !0), a = new Array(r), s = new Array(i), c = [], p = [];
   for (n = 0; n < r; ++n, t += 4)
-    i[n] = e.getInt32(t, !0);
-  for (n = 0; n < o; ++n, t += 16)
+    a[n] = e.getInt32(t, !0);
+  for (n = 0; n < i; ++n, t += 16)
     s[n] = [e.getFloat64(t, !0), e.getFloat64(t + 8, !0)];
-  return i.forEach(function(h, a) {
-    var u = s.slice(h, i[a + 1]);
-    ie(u) ? c.push([u]) : d.push(u);
-  }), d.forEach(function(h) {
-    c.some(function(a) {
-      if (ae(a[0], h))
-        return a.push(h), !0;
+  return a.forEach(function(h, o) {
+    var u = s.slice(h, a[o + 1]);
+    ae(u) ? c.push([u]) : p.push(u);
+  }), p.forEach(function(h) {
+    c.some(function(o) {
+      if (oe(o[0], h))
+        return o.push(h), !0;
     }) || c.push([h]);
   }), c.length === 1 ? { type: "Polygon", coordinates: c[0] } : { type: "MultiPolygon", coordinates: c };
 }
-function ie(e) {
+function ae(e) {
   if ((n = e.length) < 4)
     return !1;
   for (var t = 0, n, r = e[n - 1][1] * e[0][0] - e[n - 1][0] * e[0][1]; ++t < n; )
     r += e[t - 1][1] * e[t][0] - e[t - 1][0] * e[t][1];
   return r >= 0;
 }
-function ae(e, t) {
-  for (var n = -1, r = t.length, o; ++n < r; )
-    if (o = ue(e, t[n]))
-      return o > 0;
+function oe(e, t) {
+  for (var n = -1, r = t.length, i; ++n < r; )
+    if (i = ue(e, t[n]))
+      return i > 0;
   return !1;
 }
 function ue(e, t) {
-  for (var n = t[0], r = t[1], o = -1, i = 0, s = e.length, c = s - 1; i < s; c = i++) {
-    var d = e[i], h = d[0], a = d[1], u = e[c], l = u[0], p = u[1];
-    if (se(d, u, t))
+  for (var n = t[0], r = t[1], i = -1, a = 0, s = e.length, c = s - 1; a < s; c = a++) {
+    var p = e[a], h = p[0], o = p[1], u = e[c], l = u[0], d = u[1];
+    if (se(p, u, t))
       return 0;
-    a > r != p > r && n < (l - h) * (r - a) / (p - a) + h && (o = -o);
+    o > r != d > r && n < (l - h) * (r - o) / (d - o) + h && (i = -i);
   }
-  return o;
+  return i;
 }
 function se(e, t, n) {
-  var r = n[0] - e[0], o = n[1] - e[1];
-  if (r === 0 && o === 0)
+  var r = n[0] - e[0], i = n[1] - e[1];
+  if (r === 0 && i === 0)
     return !0;
-  var i = t[0] - e[0], s = t[1] - e[1];
-  if (i === 0 && s === 0)
+  var a = t[0] - e[0], s = t[1] - e[1];
+  if (a === 0 && s === 0)
     return !1;
-  var c = (r * i + o * s) / (i * i + s * s);
-  return c < 0 || c > 1 ? !1 : c === 0 || c === 1 ? !0 : c * i === r && c * s === o;
+  var c = (r * a + i * s) / (a * a + s * s);
+  return c < 0 || c > 1 ? !1 : c === 0 || c === 1 ? !0 : c * a === r && c * s === i;
 }
 function F(e) {
-  var t = 44, n, r = e.getInt32(36, !0), o = e.getInt32(40, !0), i = new Array(r), s = new Array(o);
+  var t = 44, n, r = e.getInt32(36, !0), i = e.getInt32(40, !0), a = new Array(r), s = new Array(i);
   for (n = 0; n < r; ++n, t += 4)
-    i[n] = e.getInt32(t, !0);
-  for (n = 0; n < o; ++n, t += 16)
+    a[n] = e.getInt32(t, !0);
+  for (n = 0; n < i; ++n, t += 16)
     s[n] = [e.getFloat64(t, !0), e.getFloat64(t + 8, !0)];
-  return r === 1 ? { type: "LineString", coordinates: s } : { type: "MultiLineString", coordinates: i.map(function(c, d) {
-    return s.slice(c, i[d + 1]);
+  return r === 1 ? { type: "LineString", coordinates: s } : { type: "MultiLineString", coordinates: a.map(function(c, p) {
+    return s.slice(c, a[p + 1]);
   }) };
 }
-function E(e, t) {
+function C(e, t) {
   var n = new Uint8Array(e.length + t.length);
   return n.set(e, 0), n.set(t, e.length), n;
 }
@@ -227,21 +227,21 @@ function ce() {
       return { done: !0, value: void 0 };
     var n = _(t);
     function r() {
-      return e._source.slice(4).then(function(i) {
-        return i == null ? { done: !0, value: void 0 } : (n = _(t = E(t.slice(4), i)), n.getInt32(0, !1) !== e._index ? r() : o());
+      return e._source.slice(4).then(function(a) {
+        return a == null ? { done: !0, value: void 0 } : (n = _(t = C(t.slice(4), a)), n.getInt32(0, !1) !== e._index ? r() : i());
       });
     }
-    function o() {
-      var i = n.getInt32(4, !1) * 2 - 4, s = n.getInt32(8, !0);
-      return i < 0 || s && s !== e._type ? r() : e._source.slice(i).then(function(c) {
-        return { done: !1, value: s ? e._parse(_(E(t.slice(8), c))) : null };
+    function i() {
+      var a = n.getInt32(4, !1) * 2 - 4, s = n.getInt32(8, !0);
+      return a < 0 || s && s !== e._type ? r() : e._source.slice(a).then(function(c) {
+        return { done: !1, value: s ? e._parse(_(C(t.slice(8), c))) : null };
       });
     }
-    return o();
+    return i();
   });
 }
-var B = {
-  0: oe,
+var E = {
+  0: ie,
   1: A,
   3: F,
   5: P,
@@ -264,15 +264,15 @@ var B = {
   // MultiPointM
 };
 function fe(e) {
-  return e = C(e), e.slice(100).then(function(t) {
+  return e = B(e), e.slice(100).then(function(t) {
     return new D(e, _(t));
   });
 }
 function D(e, t) {
   var n = t.getInt32(32, !0);
-  if (!(n in B))
+  if (!(n in E))
     throw new Error("unsupported shape type: " + n);
-  this._source = e, this._type = n, this._index = 0, this._parse = B[n], this.bbox = [t.getFloat64(36, !0), t.getFloat64(44, !0), t.getFloat64(52, !0), t.getFloat64(60, !0)];
+  this._source = e, this._type = n, this._index = 0, this._parse = E[n], this.bbox = [t.getFloat64(36, !0), t.getFloat64(44, !0), t.getFloat64(52, !0), t.getFloat64(60, !0)];
 }
 var G = D.prototype;
 G.read = ce;
@@ -285,7 +285,7 @@ function he() {
     this._shp.cancel()
   ]).then(le);
 }
-function de() {
+function pe() {
   var e = this;
   return Promise.all([
     e._dbf ? e._dbf.read() : { value: {} },
@@ -302,7 +302,7 @@ function de() {
     };
   });
 }
-function pe(e, t, n) {
+function de(e, t, n) {
   return Promise.all([
     fe(e),
     t && ne(t, n)
@@ -314,13 +314,13 @@ function $(e, t) {
   this._shp = e, this._dbf = t, this.bbox = e.bbox;
 }
 var R = $.prototype;
-R.read = de;
+R.read = pe;
 R.cancel = he;
 function ye(e, t, n) {
   return typeof t == "string" ? (/\.dbf$/.test(t) || (t += ".dbf"), t = x(t)) : t instanceof ArrayBuffer || t instanceof Uint8Array ? t = v(t) : t != null && (t = T(t)), typeof e == "string" ? (/\.shp$/.test(e) || (e += ".shp"), t === void 0 && (t = x(e.substring(0, e.length - 4) + ".dbf").catch(function() {
   })), e = x(e)) : e instanceof ArrayBuffer || e instanceof Uint8Array ? e = v(e) : e = T(e), Promise.all([e, t]).then(function(r) {
-    var o = r[0], i = r[1], s = "windows-1252";
-    return n && n.encoding != null && (s = n.encoding), pe(o, i, i && new TextDecoder(s));
+    var i = r[0], a = r[1], s = "windows-1252";
+    return n && n.encoding != null && (s = n.encoding), de(i, a, a && new TextDecoder(s));
   });
 }
 /*! Copyright (c) 2021-23 Prolincur Technologies LLP.
@@ -345,87 +345,87 @@ class ge extends f.FileLoader {
   setTransform(t) {
     return t instanceof f.Matrix4 && (this.transform = t), this;
   }
-  load(t, n, r, o) {
-    const i = this;
+  load(t, n, r, i) {
+    const a = this;
     return super.load(
       t,
       (s) => {
         try {
-          const c = i.parse(s);
+          const c = a.parse(s);
           n(c);
         } catch (c) {
-          o(c);
+          i(c);
         }
       },
       r,
-      o
+      i
     );
   }
   parse(t) {
     if (!t)
       return null;
-    const n = this, r = (a) => {
-      const u = new f.Vector3(a[0], a[1], 0);
+    const n = this, r = (o) => {
+      const u = new f.Vector3(o[0], o[1], 0);
       return u.applyMatrix4(n.transform), u;
-    }, o = (a) => {
-      const u = new f.BufferGeometry(), l = r(a), p = [];
-      p.push(l.x, l.y, l.z), u.setAttribute("position", new f.Float32BufferAttribute(p, 3));
+    }, i = (o) => {
+      const u = new f.BufferGeometry(), l = r(o), d = [];
+      d.push(l.x, l.y, l.z), u.setAttribute("position", new f.Float32BufferAttribute(d, 3));
       const g = new f.PointsMaterial({ color: n.color });
       return new f.Points(u, g);
-    }, i = (a) => {
+    }, a = (o) => {
       const u = new f.BufferGeometry(), l = [];
-      a == null || a.forEach((g) => {
+      o == null || o.forEach((g) => {
         const y = r(g);
         l.push(y.x, y.y, y.z);
       }), u.setAttribute("position", new f.Float32BufferAttribute(l, 3));
-      const p = new f.LineBasicMaterial({ color: n.color });
-      return new f.Line(u, p);
-    }, s = (a) => {
+      const d = new f.LineBasicMaterial({ color: n.color });
+      return new f.Line(u, d);
+    }, s = (o) => {
       let u = null;
-      a.forEach((g) => {
+      o.forEach((g) => {
         const y = new f.Shape();
         g.forEach((N, q) => {
           const [S, U] = N;
           q === 0 ? y.moveTo(S, U) : y.lineTo(S, U);
         }), y.lineTo(g[0][0], g[0][1]), u ? u.holes.push(y) : u = y;
       });
-      const l = new f.ShapeGeometry(u), p = new f.MeshBasicMaterial({ color: n.color, side: f.DoubleSide });
-      return new f.Mesh(l, p);
-    }, c = (a) => {
+      const l = new f.ShapeGeometry(u), d = new f.MeshBasicMaterial({ color: n.color, side: f.DoubleSide });
+      return new f.Mesh(l, d);
+    }, c = (o) => {
       const u = [];
-      switch (a == null ? void 0 : a.type) {
+      switch (o == null ? void 0 : o.type) {
         case "Point":
-          u.push(o(a.coordinates));
+          u.push(i(o.coordinates));
           break;
         case "LineString":
-          u.push(i(a.coordinates));
+          u.push(a(o.coordinates));
           break;
         case "Polygon":
-          u.push(s(a.coordinates));
+          u.push(s(o.coordinates));
           break;
         case "MultiPoint":
-          a.coordinates.forEach((l) => {
-            u.push(o(l));
+          o.coordinates.forEach((l) => {
+            u.push(i(l));
           });
           break;
         case "MultiPolygon":
-          a.coordinates.forEach((l) => {
+          o.coordinates.forEach((l) => {
             u.push(s(l));
           });
           break;
         case "MultiLineString":
-          a.coordinates.forEach((l) => {
-            u.push(i(l));
+          o.coordinates.forEach((l) => {
+            u.push(a(l));
           });
           break;
       }
       return u;
-    }, d = (a) => {
-      if (a.geometry) {
-        const u = c(a.geometry);
+    }, p = (o) => {
+      if (o.geometry) {
+        const u = c(o.geometry);
         return u.forEach((l) => {
-          a.properties && (l.userData = {
-            ...a.properties
+          o.properties && (l.userData = {
+            ...o.properties
           });
         }), u;
       }
@@ -433,12 +433,12 @@ class ge extends f.FileLoader {
     };
     let h = [];
     if (Array.isArray(t) ? h = t : t.type === "FeatureCollection" ? h = t.features : t.type === "Feature" && (h = [t]), h.length) {
-      const a = new f.Group();
+      const o = new f.Group();
       return h.forEach((u) => {
-        d(u).forEach((l) => {
-          a.add(l);
+        p(u).forEach((l) => {
+          o.add(l);
         });
-      }), a;
+      }), o;
     }
     return null;
   }
@@ -453,19 +453,19 @@ class _e extends f.FileLoader {
   setTransform(t) {
     return t instanceof f.Matrix4 && (this.transform = t), this;
   }
-  load(t, n, r, o) {
-    const i = this;
+  load(t, n, r, i) {
+    const a = this;
     return super.load(
       t,
       (s) => {
         try {
-          i.parse(s, n, o);
+          a.parse(s, n, i);
         } catch (c) {
-          o(c);
+          i(c);
         }
       },
       r,
-      o
+      i
     );
   }
   parse(t, n, r) {
@@ -475,19 +475,26 @@ class _e extends f.FileLoader {
     const n = this, r = await n.parseAsyncToGeoJson(t);
     if (!r)
       return null;
-    const o = new ge();
-    return o.setColor(n.color), o.setTransform(n.transform), o.parse(r);
+    const i = new ge();
+    return i.setColor(n.color), i.setTransform(n.transform), i.parse(r);
   }
   async parseAsyncToGeoJson(t) {
     if (!t)
       return null;
-    const n = await ye(t), r = await n.read(), o = async (s) => {
+    const n = await ye(t);
+    if (!n)
+      return null;
+    const r = await n.read(), i = async (s, c = []) => {
       if (s.done)
         return;
-      const c = await n.read();
-      await o(c);
+      c.push(s.value);
+      const p = await n.read();
+      await i(p, c);
+    }, a = [];
+    return await i(r, a), {
+      type: "FeatureCollection",
+      features: a
     };
-    return await o(r), r.value;
   }
 }
 export {

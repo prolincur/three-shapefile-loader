@@ -63,16 +63,23 @@ class ShapefileLoader extends THREE.FileLoader {
     if (!buffer) return null
 
     const source = await Shapefile.open(buffer)
+    if (!source) return null
+
     const result = await source.read()
-    const recursiveRead = async (result) => {
+    const recursiveRead = async (result, outcome = []) => {
       if (result.done) return
+      outcome.push(result.value)
       const data = await source.read()
-      await recursiveRead(data)
+      await recursiveRead(data, outcome)
     }
 
-    await recursiveRead(result)
-    const geojson = result.value
-    return geojson
+    const features = []
+    await recursiveRead(result, features)
+
+    return {
+      type: 'FeatureCollection',
+      features,
+    }
   }
 }
 
